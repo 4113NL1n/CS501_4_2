@@ -1,5 +1,4 @@
 package com.example.cs501_4_2
-
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
@@ -52,20 +51,15 @@ import com.example.cs501_4_2.ui.theme.CS501_4_2Theme
 import kotlinx.parcelize.Parcelize
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import org.xmlpull.v1.XmlPullParser
-
 @Parcelize
 data class GameWord(
     val word : String,
     val hint : String
 ) : Parcelable
-
 data class SizeScreen(
     val width: Int,
     val height: Int
 )
-
-
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,8 +77,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
 @Composable
 fun HangManOrientation(modifier: Modifier){
     val context = LocalContext.current
@@ -208,7 +200,6 @@ fun HangManHorizontal(modifier: Modifier,
                 chosenWordFound,
                 4
             )
-
             HangManImage(
                 progression,
                 progressMap,
@@ -251,15 +242,12 @@ fun HangManHorizontal(modifier: Modifier,
                     haveWon,
                     width
                 )
-
             }
             if(progression.value == 7){
                 buttonTrueOrFalse.value = List(26){false}
                 hintNum.value = 3
             }
         }
-
-
     }
 }
 @Composable
@@ -269,7 +257,6 @@ fun screenSize() : SizeScreen{
     val height =  remember{configContext.screenHeightDp}
     return SizeScreen(width,height)
 }
-
 @Composable
 fun HangManVertical(modifier: Modifier,
                     progression: MutableState<Int>,
@@ -286,8 +273,7 @@ fun HangManVertical(modifier: Modifier,
                     haveWon: MutableState<Boolean>,
                     context: Context,
                     width: Int
-) {
-
+){
     Box (modifier = modifier.fillMaxSize()){
         Column(
         ) {
@@ -312,7 +298,6 @@ fun HangManVertical(modifier: Modifier,
                         ){
                             Text(text = "New game")
                         }
-
                     }
                         restartGame(
                             restart,
@@ -327,8 +312,6 @@ fun HangManVertical(modifier: Modifier,
                             displayWord,
                             haveWon
                         )
-
-
                 }
             }else {
                 HangManImage(
@@ -380,7 +363,6 @@ fun HangManVertical(modifier: Modifier,
                     restart,
                     haveWon,
                     width
-
                 )
                 if(progression.value == 7){
                     buttonTrueOrFalse.value = List(26){false}
@@ -389,7 +371,6 @@ fun HangManVertical(modifier: Modifier,
             }
         }
     }
-
 }
 @Composable
 fun DisplayButton(
@@ -407,9 +388,6 @@ fun DisplayButton(
     restart: MutableState<Boolean>,
     haveWon: MutableState<Boolean>,
     width : Int
-
-
-
 ){
     Column(
         modifier = modifier,
@@ -438,13 +416,11 @@ fun DisplayButton(
                 text = hintMessage.value
             )
         }
-
             Button(
                 onClick = { restart.value=true }
             ){
                 Text(text = "New game")
             }
-
     }
     if(restart.value){
         restartGame(
@@ -487,10 +463,8 @@ fun restartGame(restart: MutableState<Boolean>,
             displayWord.value = newDisplayWord.value
             haveWon.value = false
             restart.value = false
-
     }
 }
-
 fun GetHint(
     hintNum : MutableState<Int>,
     chosenWord: GameWord,
@@ -530,13 +504,11 @@ fun GetHint(
             }
     }
 }
-
 fun RevealALlVowel(chosenWord: GameWord, displayWord: MutableState<List<String>>, chosenWordFound: MutableState<List<Boolean>>, buttonTrueOrFalse: MutableState<List<Boolean>>){
     val vowel = setOf('A','E','I','O','U')
     val newList = displayWord.value.toMutableList()
     val newFoundList = chosenWordFound.value.toMutableList()
     for(i in 0 until chosenWord.word.length){
-
         if(vowel.contains(chosenWord.word[i])){
             newList[i] = " ${chosenWord.word[i]} "
             newFoundList[i] = true
@@ -546,7 +518,6 @@ fun RevealALlVowel(chosenWord: GameWord, displayWord: MutableState<List<String>>
     displayWord.value = newList
     chosenWordFound.value = newFoundList
 }
-
 @Composable
 fun generateWord(wordList : List<GameWord>,modifier: Modifier): Triple<MutableState<GameWord>,MutableState<List<Boolean>>,MutableState<List<String>>>
 {
@@ -556,7 +527,6 @@ fun generateWord(wordList : List<GameWord>,modifier: Modifier): Triple<MutableSt
     val displayWord = rememberSaveable() { mutableStateOf(List(chosenWord.value.word.length){" _ "})  }
     return Triple(chosenWord,chosenWordFound,displayWord)
 }
-
 @Composable
 fun HangManImage(progression: MutableState<Int>,progressMap : HashMap<Int, Int>, modifier: Modifier){
     if(progression.value <= 7){
@@ -567,7 +537,6 @@ fun HangManImage(progression: MutableState<Int>,progressMap : HashMap<Int, Int>,
         )
     }
 }
-
 fun DisableHalfLetter(buttonTrueOrFalse: MutableState<List<Boolean>>,chosenWord: GameWord){
     val remaining = buttonTrueOrFalse.value.count{ it }
     var count = 0
@@ -585,7 +554,6 @@ fun DisableHalfLetter(buttonTrueOrFalse: MutableState<List<Boolean>>,chosenWord:
         alphaStart++
     }
 }
-
 @Composable
 fun DisplayAlphabetButton(
     modifier : Modifier,
@@ -618,7 +586,6 @@ fun DisplayAlphabetButton(
         }
     }
 }
-
 fun revealCharacter(progression: MutableState<Int>, num : Int, chosenWord: GameWord, displayWord :MutableState<List<String>>, chosenWordFound : MutableState<List<Boolean>>){
     if(chosenWord.word.indexOf(num.toChar()) != -1){
         val newList = displayWord.value.toMutableList()
@@ -635,8 +602,6 @@ fun revealCharacter(progression: MutableState<Int>, num : Int, chosenWord: GameW
         progression.value ++
     }
 }
-
-
 fun changeButtonList(buttonTrueOrFalse: MutableState<List<Boolean>>, num: Int){
     val newList = buttonTrueOrFalse.value.toMutableList()
     newList[num-65] = false
@@ -678,4 +643,3 @@ fun parseWords(context : Context) : Set<GameWord>{
     }
     return retList
 }
-
