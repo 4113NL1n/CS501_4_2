@@ -75,6 +75,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+@Composable
+fun HangManOrientation(modifier: Modifier){
+
+}
+
 @Composable
 fun HangMan(modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -91,49 +97,87 @@ fun HangMan(modifier: Modifier = Modifier) {
     Box (modifier = modifier.fillMaxSize()){
         Column(
         ) {
-            HangManImage(
-                progression,
-                progressMap,
-                modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.5f)
-            )
-            DisplayAlphabetButton(
-                Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.45f),
-                buttonTrueOrFalse,
-                progression,
-                chosenWord.value,
-                displayWord,
-                chosenWordFound
-            )
-            LazyRow(
-                modifier = modifier.fillMaxWidth().fillMaxHeight(0.2f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                items(displayWord.value){ display ->
-                    Text(
-                        text = display,
-                        fontSize = 20.sp
-                    )
+            if(chosenWordFound.value.count{it} == chosenWord.value.word.length){
+                haveWon.value = true
+                if(haveWon.value){
+                    Column {
+                        Image(
+                            painter = painterResource(R.drawable.win),
+                            contentDescription = null,
+                            modifier = modifier.fillMaxWidth().fillMaxHeight(0.5f)
+                        )
+                        Button(
+                            onClick = {
+                                restart.value=true
+                                      },
+                            modifier = modifier.fillMaxWidth().fillMaxHeight(1f)
+                        ){
+                            Text(text = "New game")
+                        }
+
+                    }
+                        restartGame(
+                            restart,
+                            progression ,
+                            hintMessage,
+                            buttonTrueOrFalse ,
+                            gameMessage ,
+                            wordList,
+                            hintNum,
+                            chosenWordFound ,
+                            chosenWord ,
+                            displayWord,
+                            haveWon
+                        )
+
+
                 }
+            }else {
+                HangManImage(
+                    progression,
+                    progressMap,
+                    modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.5f)
+                )
+                DisplayAlphabetButton(
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.45f),
+                    buttonTrueOrFalse,
+                    progression,
+                    chosenWord.value,
+                    displayWord,
+                    chosenWordFound
+                )
+                LazyRow(
+                    modifier = modifier.fillMaxWidth().fillMaxHeight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items(displayWord.value) { display ->
+                        Text(
+                            text = display,
+                            fontSize = 20.sp
+                        )
+                    }
+                }
+                DisplayButton(
+                    Modifier.fillMaxSize().fillMaxHeight(1f),
+                    hintMessage,
+                    hintNum,
+                    chosenWord,
+                    gameMessage,
+                    context,
+                    progression,
+                    buttonTrueOrFalse,
+                    displayWord,
+                    chosenWordFound,
+                    wordList,
+                    restart,
+                    haveWon
+                )
             }
-            DisplayButton(
-                Modifier.fillMaxSize().fillMaxHeight(1f),
-                hintMessage,
-                hintNum,
-                chosenWord,
-                gameMessage,
-                context,
-                progression,
-                buttonTrueOrFalse,
-                displayWord,
-                chosenWordFound,
-                wordList,
-                restart
-            )
         }
     }
 
@@ -151,7 +195,8 @@ fun DisplayButton(
     displayWord: MutableState<List<String>>,
     chosenWordFound: MutableState<List<Boolean>>,
     wordList: List<GameWord>,
-    restart: MutableState<Boolean>
+    restart: MutableState<Boolean>,
+    haveWon: MutableState<Boolean>
 
 
 
@@ -188,18 +233,48 @@ fun DisplayButton(
         }
     }
     if(restart.value){
-        progression.value = 0
-        hintMessage.value = "NO HINT"
-        buttonTrueOrFalse.value = List(26){true}
-        gameMessage.value = "HINT"
-        hintNum.value = 0
-        val (newChosenWord, newChosenWordFound, newDisplayWord) = generateWord(wordList,Modifier)
-        chosenWord.value = newChosenWord.value
-        chosenWordFound.value = newChosenWordFound.value
-        displayWord.value = newDisplayWord.value
-        restart.value = false
+        restartGame(
+            restart,
+            progression ,
+            hintMessage,
+            buttonTrueOrFalse ,
+            gameMessage ,
+            wordList,
+            hintNum,
+            chosenWordFound ,
+            chosenWord ,
+            displayWord,
+            haveWon
+        )
     }
+}
+@Composable
+fun restartGame(restart: MutableState<Boolean>,
+                progression: MutableState<Int>,
+                hintMessage: MutableState<String>,
+                buttonTrueOrFalse: MutableState<List<Boolean>>,
+                gameMessage: MutableState<String>,
+                wordList: List<GameWord>,
+                hintNum: MutableState<Int>,
+                chosenWordFound: MutableState<List<Boolean>>,
+                chosenWord: MutableState<GameWord>,
+                displayWord: MutableState<List<String>>,
+                haveWon: MutableState<Boolean>
+                ){
+    if(restart.value){
+            progression.value = 0
+            hintMessage.value = "NO HINT"
+            buttonTrueOrFalse.value = List(26){true}
+            gameMessage.value = "HINT"
+            hintNum.value = 0
+            val (newChosenWord, newChosenWordFound, newDisplayWord) = generateWord(wordList,Modifier)
+            chosenWord.value = newChosenWord.value
+            chosenWordFound.value = newChosenWordFound.value
+            displayWord.value = newDisplayWord.value
+            haveWon.value = false
+            restart.value = false
 
+    }
 }
 
 fun GetHint(
