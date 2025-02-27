@@ -1,15 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <words xmlns:android="http://schemas.android.com/apk/res/android">
-    <word>
-    hang
-    </word>
-    <word>
-        man
-    </word>
-    <word>
-        boston
-    </word>
-    <word>
-        computer
-    </word>
+    <wordInfo>
+        <word>HANG</word>
+        <hint>part of the game</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>MAN</word>
+        <hint>part of the game</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>BOSTON</word>
+        <hint>University in Boston</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>COMPUTER</word>
+        <hint>used to develop this game</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>ONE</word>
+        <hint>first</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>TWO</word>
+        <hint>second</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>THREE</word>
+        <hint>third</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>FOUR</word>
+        <hint>quad</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>FIVE</word>
+        <hint>quint</hint>
+    </wordInfo>
+    <wordInfo>
+        <word>TWELVE</word>
+        <hint>dozen</hint>
+    </wordInfo>
 </words>
