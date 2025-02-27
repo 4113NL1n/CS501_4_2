@@ -86,6 +86,8 @@ fun HangMan(modifier: Modifier = Modifier) {
     val gameMessage = rememberSaveable() { mutableStateOf("HINT")}
     val hintNum = rememberSaveable() { mutableStateOf(0)}
     val (chosenWord, chosenWordFound, displayWord) = generateWord(wordList,Modifier)
+    val restart = rememberSaveable() { mutableStateOf(false)}
+    val haveWon = rememberSaveable() { mutableStateOf(false) }
     Box (modifier = modifier.fillMaxSize()){
         Column(
         ) {
@@ -100,14 +102,18 @@ fun HangMan(modifier: Modifier = Modifier) {
                 Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.45f),
-                buttonTrueOrFalse
+                buttonTrueOrFalse,
+                progression,
+                chosenWord.value,
+                displayWord,
+                chosenWordFound
             )
             LazyRow(
                 modifier = modifier.fillMaxWidth().fillMaxHeight(0.2f),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                items(displayWord){ display ->
+                items(displayWord.value){ display ->
                     Text(
                         text = display,
                         fontSize = 20.sp
@@ -122,7 +128,11 @@ fun HangMan(modifier: Modifier = Modifier) {
                 gameMessage,
                 context,
                 progression,
-                buttonTrueOrFalse
+                buttonTrueOrFalse,
+                displayWord,
+                chosenWordFound,
+                wordList,
+                restart
             )
         }
     }
@@ -130,14 +140,21 @@ fun HangMan(modifier: Modifier = Modifier) {
 }
 @Composable
 fun DisplayButton(
-        modifier : Modifier,
-        hintMessage : MutableState<String>,
-        hintNum: MutableState<Int>,
-        chosenWord: GameWord,
-        gameMessage : MutableState<String>,
-        context: Context,
-        progression: MutableState<Int>,
-        buttonTrueOrFalse: MutableState<List<Boolean>>
+    modifier : Modifier,
+    hintMessage : MutableState<String>,
+    hintNum: MutableState<Int>,
+    chosenWord: MutableState<GameWord>,
+    gameMessage : MutableState<String>,
+    context: Context,
+    progression: MutableState<Int>,
+    buttonTrueOrFalse: MutableState<List<Boolean>>,
+    displayWord: MutableState<List<String>>,
+    chosenWordFound: MutableState<List<Boolean>>,
+    wordList: List<GameWord>,
+    restart: MutableState<Boolean>
+
+
+
 ){
     Column(
         modifier = modifier,
@@ -148,11 +165,13 @@ fun DisplayButton(
             onClick = {
                 GetHint(
                     hintNum,
-                    chosenWord,
+                    chosenWord.value,
                     hintMessage,
                     progression,
                     context,
-                    buttonTrueOrFalse
+                    buttonTrueOrFalse,
+                    displayWord,
+                    chosenWordFound
                 )
             },
             enabled = if (hintNum.value > 2) false else true
@@ -163,20 +182,35 @@ fun DisplayButton(
             text = hintMessage.value
         )
         Button(
-            onClick = {}
+            onClick = { restart.value=true }
         ){
             Text(text = "New game")
         }
     }
+    if(restart.value){
+        progression.value = 0
+        hintMessage.value = "NO HINT"
+        buttonTrueOrFalse.value = List(26){true}
+        gameMessage.value = "HINT"
+        hintNum.value = 0
+        val (newChosenWord, newChosenWordFound, newDisplayWord) = generateWord(wordList,Modifier)
+        chosenWord.value = newChosenWord.value
+        chosenWordFound.value = newChosenWordFound.value
+        displayWord.value = newDisplayWord.value
+        restart.value = false
+    }
+
 }
 
 fun GetHint(
-        hintNum : MutableState<Int>,
-        chosenWord: GameWord,
-        hintMessage: MutableState<String>,
-        progression : MutableState<Int>,
-        context: Context,
-        buttonTrueOrFalse: MutableState<List<Boolean>>
+    hintNum : MutableState<Int>,
+    chosenWord: GameWord,
+    hintMessage: MutableState<String>,
+    progression : MutableState<Int>,
+    context: Context,
+    buttonTrueOrFalse: MutableState<List<Boolean>>,
+    displayWord: MutableState<List<String>>,
+    chosenWordFound: MutableState<List<Boolean>>
 ){
     val currNum = hintNum.value
     when(hintNum.value){
@@ -197,7 +231,7 @@ fun GetHint(
             }
         2 -> {
             if (progression.value < 6){
-                //TODO
+                RevealALlVowel(chosenWord, displayWord, chosenWordFound, buttonTrueOrFalse)
                 hintNum.value = currNum + 1
                 progression.value += 1
             }else{
@@ -208,13 +242,29 @@ fun GetHint(
     }
 }
 
+fun RevealALlVowel(chosenWord: GameWord, displayWord: MutableState<List<String>>, chosenWordFound: MutableState<List<Boolean>>, buttonTrueOrFalse: MutableState<List<Boolean>>){
+    val vowel = setOf('A','E','I','O','U')
+    val newList = displayWord.value.toMutableList()
+    val newFoundList = chosenWordFound.value.toMutableList()
+    for(i in 0 until chosenWord.word.length){
+
+        if(vowel.contains(chosenWord.word[i])){
+            newList[i] = " ${chosenWord.word[i]} "
+            newFoundList[i] = true
+            changeButtonList(buttonTrueOrFalse, chosenWord.word[i].code)
+        }
+    }
+    displayWord.value = newList
+    chosenWordFound.value = newFoundList
+}
+
 @Composable
-fun generateWord(wordList : List<GameWord>,modifier: Modifier): Triple<GameWord,List<Boolean>,List<String>>
+fun generateWord(wordList : List<GameWord>,modifier: Modifier): Triple<MutableState<GameWord>,MutableState<List<Boolean>>,MutableState<List<String>>>
 {
     val randomNum = (0 until wordList.size-1).random()
-    val chosenWord = wordList[randomNum]
-    val chosenWordFound = rememberSaveable() { List(chosenWord.word.length){false} }
-    val displayWord = rememberSaveable() { List(chosenWord.word.length){" _ "} }
+    val chosenWord = rememberSaveable() { mutableStateOf(wordList[randomNum]) }
+    val chosenWordFound = rememberSaveable() { mutableStateOf(List(chosenWord.value.word.length){false} ) }
+    val displayWord = rememberSaveable() { mutableStateOf(List(chosenWord.value.word.length){" _ "})  }
     return Triple(chosenWord,chosenWordFound,displayWord)
 }
 
@@ -233,7 +283,6 @@ fun DisableHalfLetter(buttonTrueOrFalse: MutableState<List<Boolean>>,chosenWord:
     val remaining = buttonTrueOrFalse.value.count{ it }
     var count = 0
     var alphaStart = 65
-    var index = 0
     for(i in 0 until  26){
         if (buttonTrueOrFalse.value[alphaStart - 65]){
             if(!(chosenWord.word.contains(alphaStart.toChar()))){
@@ -251,7 +300,11 @@ fun DisableHalfLetter(buttonTrueOrFalse: MutableState<List<Boolean>>,chosenWord:
 @Composable
 fun DisplayAlphabetButton(
     modifier : Modifier,
-    buttonTrueOrFalse : MutableState<List<Boolean>>
+    buttonTrueOrFalse : MutableState<List<Boolean>>,
+    progression: MutableState<Int>,
+    chosenWord: GameWord,
+    displayWord: MutableState<List<String>>,
+    chosenWordFound: MutableState<List<Boolean>>
 ){
     LazyVerticalGrid(
         modifier = modifier.fillMaxSize(),
@@ -264,7 +317,7 @@ fun DisplayAlphabetButton(
                 Button(
                     onClick = {
                         changeButtonList(buttonTrueOrFalse,num)
-
+                        revealCharacter(progression,num,chosenWord,displayWord, chosenWordFound)
                     },
                     modifier = Modifier.size(40.dp),
                     enabled = buttonTrueOrFalse.value[num-65]
@@ -276,8 +329,21 @@ fun DisplayAlphabetButton(
     }
 }
 
-fun revealCharacter(progression: MutableState<Int>, num : Int){
-
+fun revealCharacter(progression: MutableState<Int>, num : Int, chosenWord: GameWord, displayWord :MutableState<List<String>>, chosenWordFound : MutableState<List<Boolean>>){
+    if(chosenWord.word.indexOf(num.toChar()) != -1){
+        val newList = displayWord.value.toMutableList()
+        val newFoundList = chosenWordFound.value.toMutableList()
+        for(i in 0 until chosenWord.word.length){
+            if(chosenWord.word[i] == num.toChar()){
+                newList[i] = " ${num.toChar()} "
+                newFoundList[i] = true
+            }
+        }
+        chosenWordFound.value = newFoundList
+        displayWord.value = newList
+    }else{
+        progression.value ++
+    }
 }
 
 
