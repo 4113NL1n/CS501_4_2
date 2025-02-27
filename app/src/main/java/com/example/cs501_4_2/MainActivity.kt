@@ -39,7 +39,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HangMan(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val hangManImage = imageSet()
+    val progressMap = imageSet()
+    var progression = 0
+    var hint = 0
     val wordList = parseWords(context)
     Text(
         text = "$wordList",
@@ -47,18 +49,16 @@ fun HangMan(modifier: Modifier = Modifier) {
     )
 
 }
+@Composable
+fun HangManImage(progression: Int, ){
 
-fun imageSet() : Set<Pair<String,Int>>{
-    return setOf(
-        "start" to R.drawable.start,
-        "head" to R.drawable.head,
-        "left_leg" to R.drawable.left_leg,
-        "right_leg" to R.drawable.right_leg,
-        "left_arm" to R.drawable.left_arm,
-        "right_arm" to R.drawable.right_arm,
-        "dead" to R.drawable.dead
+}
+fun imageSet() : HashMap<Int,Int>{
+    return hashMapOf(
+
     )
 }
+
 
 fun parseWords(context : Context) : Set<String>{
     val retList = mutableSetOf<String>()
