@@ -116,7 +116,8 @@ fun HangManOrientation(modifier: Modifier){
             displayWord,
             restart,
             haveWon,
-            context
+            context,
+            width
         )
     }else{
         HangManVertical(
@@ -133,7 +134,8 @@ fun HangManOrientation(modifier: Modifier){
             displayWord,
             restart,
             haveWon,
-            context
+            context,
+            width
         )
     }
 
@@ -152,7 +154,8 @@ fun HangManHorizontal(modifier: Modifier,
                       displayWord: MutableState<List<String>>,
                       restart: MutableState<Boolean>,
                       haveWon: MutableState<Boolean>,
-                      context: Context
+                      context: Context,
+                      width: Int
                       ){
     Row(
         modifier = modifier.fillMaxSize()
@@ -164,13 +167,17 @@ fun HangManHorizontal(modifier: Modifier,
                     Image(
                         painter = painterResource(R.drawable.win),
                         contentDescription = null,
-                        modifier = modifier.fillMaxSize().weight(0.5f)
+                        modifier = modifier
+                            .fillMaxSize()
+                            .weight(0.5f)
                     )
                     Button(
                         onClick = {
                             restart.value=true
                         },
-                        modifier = modifier.fillMaxSize().weight(1f)
+                        modifier = modifier
+                            .fillMaxSize()
+                            .weight(1f)
                     ){
                         Text(text = "New game")
                     }
@@ -209,9 +216,13 @@ fun HangManHorizontal(modifier: Modifier,
                     .fillMaxSize()
                     .weight(0.5f)
             )
-            Column(modifier = Modifier.fillMaxSize().weight(0.5f)) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .weight(0.5f)) {
                 LazyRow(
-                    modifier = modifier.fillMaxSize().weight(0.25f),
+                    modifier = modifier
+                        .fillMaxSize()
+                        .weight(0.25f),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -223,7 +234,9 @@ fun HangManHorizontal(modifier: Modifier,
                     }
                 }
                 DisplayButton(
-                    Modifier.fillMaxSize().weight(0.5f),
+                    Modifier
+                        .fillMaxSize()
+                        .weight(0.5f),
                     hintMessage,
                     hintNum,
                     chosenWord,
@@ -235,9 +248,14 @@ fun HangManHorizontal(modifier: Modifier,
                     chosenWordFound,
                     wordList,
                     restart,
-                    haveWon
+                    haveWon,
+                    width
                 )
 
+            }
+            if(progression.value == 7){
+                buttonTrueOrFalse.value = List(26){false}
+                hintNum.value = 3
             }
         }
 
@@ -266,7 +284,8 @@ fun HangManVertical(modifier: Modifier,
                     displayWord: MutableState<List<String>>,
                     restart: MutableState<Boolean>,
                     haveWon: MutableState<Boolean>,
-                    context: Context
+                    context: Context,
+                    width: Int
 ) {
 
     Box (modifier = modifier.fillMaxSize()){
@@ -279,13 +298,17 @@ fun HangManVertical(modifier: Modifier,
                         Image(
                             painter = painterResource(R.drawable.win),
                             contentDescription = null,
-                            modifier = modifier.fillMaxWidth().fillMaxHeight(0.5f)
+                            modifier = modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(0.5f)
                         )
                         Button(
                             onClick = {
                                 restart.value=true
                                       },
-                            modifier = modifier.fillMaxWidth().fillMaxHeight(1f)
+                            modifier = modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(1f)
                         ){
                             Text(text = "New game")
                         }
@@ -327,7 +350,9 @@ fun HangManVertical(modifier: Modifier,
                     7
                 )
                 LazyRow(
-                    modifier = modifier.fillMaxWidth().fillMaxHeight(0.2f),
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.2f),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -339,7 +364,9 @@ fun HangManVertical(modifier: Modifier,
                     }
                 }
                 DisplayButton(
-                    Modifier.fillMaxSize().fillMaxHeight(1f),
+                    Modifier
+                        .fillMaxSize()
+                        .fillMaxHeight(1f),
                     hintMessage,
                     hintNum,
                     chosenWord,
@@ -351,8 +378,14 @@ fun HangManVertical(modifier: Modifier,
                     chosenWordFound,
                     wordList,
                     restart,
-                    haveWon
+                    haveWon,
+                    width
+
                 )
+                if(progression.value == 7){
+                    buttonTrueOrFalse.value = List(26){false}
+                    hintNum.value = 3
+                }
             }
         }
     }
@@ -372,7 +405,8 @@ fun DisplayButton(
     chosenWordFound: MutableState<List<Boolean>>,
     wordList: List<GameWord>,
     restart: MutableState<Boolean>,
-    haveWon: MutableState<Boolean>
+    haveWon: MutableState<Boolean>,
+    width : Int
 
 
 
@@ -382,31 +416,35 @@ fun DisplayButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Button(
-            onClick = {
-                GetHint(
-                    hintNum,
-                    chosenWord.value,
-                    hintMessage,
-                    progression,
-                    context,
-                    buttonTrueOrFalse,
-                    displayWord,
-                    chosenWordFound
-                )
-            },
-            enabled = if (hintNum.value > 2) false else true
-        ){
-            Text(text = gameMessage.value)
+        if(width <= 600){
+            Button(
+                onClick = {
+                    GetHint(
+                        hintNum,
+                        chosenWord.value,
+                        hintMessage,
+                        progression,
+                        context,
+                        buttonTrueOrFalse,
+                        displayWord,
+                        chosenWordFound
+                    )
+                },
+                enabled = if (hintNum.value > 2) false else true
+            ) {
+                Text(text = gameMessage.value)
+            }
+            Text(
+                text = hintMessage.value
+            )
         }
-        Text(
-            text = hintMessage.value
-        )
-        Button(
-            onClick = { restart.value=true }
-        ){
-            Text(text = "New game")
-        }
+
+            Button(
+                onClick = { restart.value=true }
+            ){
+                Text(text = "New game")
+            }
+
     }
     if(restart.value){
         restartGame(
