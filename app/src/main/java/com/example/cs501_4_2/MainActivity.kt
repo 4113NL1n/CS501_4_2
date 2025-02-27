@@ -1,5 +1,6 @@
 package com.example.cs501_4_2
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,9 +13,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.cs501_4_2.ui.theme.CS501_4_2Theme
+import org.xmlpull.v1.XmlPullParser
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +38,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HangMan(modifier: Modifier = Modifier) {
-    val hangManImage = setOf(
+    val context = LocalContext.current
+    val hangManImage = imageSet()
+    val wordList = parseWords(context)
+    Text(
+        text = "$wordList",
+        modifier = modifier
+    )
+
+}
+
+fun imageSet() : Set<Pair<String,Int>>{
+    return setOf(
         "start" to R.drawable.start,
         "head" to R.drawable.head,
         "left_leg" to R.drawable.left_leg,
@@ -45,3 +60,19 @@ fun HangMan(modifier: Modifier = Modifier) {
     )
 }
 
+fun parseWords(context : Context) : Set<String>{
+    val retList = mutableSetOf<String>()
+    val parser = context.resources.getXml(R.xml.wordsforhangman)
+    var eventType = parser.eventType
+    while(eventType != XmlPullParser.END_DOCUMENT){
+        when(eventType){
+            XmlPullParser.START_TAG ->{
+                when(parser.name){
+                    "word" -> retList.add(parser.nextText())
+                }
+            }
+        }
+        eventType = parser.next()
+    }
+    return retList
+}
