@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +59,13 @@ data class GameWord(
     val hint : String
 ) : Parcelable
 
+data class SizeScreen(
+    val width: Int,
+    val height: Int
+)
+
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +73,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CS501_4_2Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HangMan(
+                    HangManOrientation(
                         modifier = Modifier
                             .padding(innerPadding)
                             .windowInsetsPadding(WindowInsets.systemBars)
@@ -78,11 +87,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HangManOrientation(modifier: Modifier){
-
-}
-
-@Composable
-fun HangMan(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val progressMap = imageSet()
     val progression = rememberSaveable() { mutableStateOf(0)}
@@ -94,6 +98,177 @@ fun HangMan(modifier: Modifier = Modifier) {
     val (chosenWord, chosenWordFound, displayWord) = generateWord(wordList,Modifier)
     val restart = rememberSaveable() { mutableStateOf(false)}
     val haveWon = rememberSaveable() { mutableStateOf(false) }
+
+    val size = screenSize()
+    val width = size.width
+    if(width>600){
+        HangManHorizontal(
+            modifier,
+            progression,
+            progressMap,
+            hintMessage,
+            buttonTrueOrFalse,
+            wordList,
+            gameMessage,
+            hintNum,
+            chosenWord,
+            chosenWordFound,
+            displayWord,
+            restart,
+            haveWon,
+            context
+        )
+    }else{
+        HangManVertical(
+            modifier,
+            progression,
+            progressMap,
+            hintMessage,
+            buttonTrueOrFalse,
+            wordList,
+            gameMessage,
+            hintNum,
+            chosenWord,
+            chosenWordFound,
+            displayWord,
+            restart,
+            haveWon,
+            context
+        )
+    }
+
+}
+@Composable
+fun HangManHorizontal(modifier: Modifier,
+                      progression: MutableState<Int>,
+                      progressMap: HashMap<Int, Int>,
+                      hintMessage: MutableState<String>,
+                      buttonTrueOrFalse: MutableState<List<Boolean>>,
+                      wordList: List<GameWord>,
+                      gameMessage: MutableState<String>,
+                      hintNum: MutableState<Int>,
+                      chosenWord: MutableState<GameWord>,
+                      chosenWordFound: MutableState<List<Boolean>>,
+                      displayWord: MutableState<List<String>>,
+                      restart: MutableState<Boolean>,
+                      haveWon: MutableState<Boolean>,
+                      context: Context
+                      ){
+    Row(
+        modifier = modifier.fillMaxSize()
+    ){
+        if(chosenWordFound.value.count{it} == chosenWord.value.word.length){
+            haveWon.value=true
+            if(haveWon.value){
+                Row(){
+                    Image(
+                        painter = painterResource(R.drawable.win),
+                        contentDescription = null,
+                        modifier = modifier.fillMaxSize().weight(0.5f)
+                    )
+                    Button(
+                        onClick = {
+                            restart.value=true
+                        },
+                        modifier = modifier.fillMaxSize().weight(1f)
+                    ){
+                        Text(text = "New game")
+                    }
+                }
+                restartGame(
+                    restart,
+                    progression ,
+                    hintMessage,
+                    buttonTrueOrFalse ,
+                    gameMessage ,
+                    wordList,
+                    hintNum,
+                    chosenWordFound ,
+                    chosenWord ,
+                    displayWord,
+                    haveWon
+                )
+            }
+        }else{
+            DisplayAlphabetButton(
+                Modifier
+                    .fillMaxSize()
+                    .weight(0.50f),
+                buttonTrueOrFalse,
+                progression,
+                chosenWord.value,
+                displayWord,
+                chosenWordFound,
+                4
+            )
+
+            HangManImage(
+                progression,
+                progressMap,
+                modifier
+                    .fillMaxSize()
+                    .weight(0.5f)
+            )
+            Column(modifier = Modifier.fillMaxSize().weight(0.5f)) {
+                LazyRow(
+                    modifier = modifier.fillMaxSize().weight(0.25f),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items(displayWord.value) { display ->
+                        Text(
+                            text = display,
+                            fontSize = 20.sp
+                        )
+                    }
+                }
+                DisplayButton(
+                    Modifier.fillMaxSize().weight(0.5f),
+                    hintMessage,
+                    hintNum,
+                    chosenWord,
+                    gameMessage,
+                    context,
+                    progression,
+                    buttonTrueOrFalse,
+                    displayWord,
+                    chosenWordFound,
+                    wordList,
+                    restart,
+                    haveWon
+                )
+
+            }
+        }
+
+
+    }
+}
+@Composable
+fun screenSize() : SizeScreen{
+    val configContext = LocalConfiguration.current
+    val width =  remember{configContext.screenWidthDp}
+    val height =  remember{configContext.screenHeightDp}
+    return SizeScreen(width,height)
+}
+
+@Composable
+fun HangManVertical(modifier: Modifier,
+                    progression: MutableState<Int>,
+                    progressMap: HashMap<Int, Int>,
+                    hintMessage: MutableState<String>,
+                    buttonTrueOrFalse: MutableState<List<Boolean>>,
+                    wordList: List<GameWord>,
+                    gameMessage: MutableState<String>,
+                    hintNum: MutableState<Int>,
+                    chosenWord: MutableState<GameWord>,
+                    chosenWordFound: MutableState<List<Boolean>>,
+                    displayWord: MutableState<List<String>>,
+                    restart: MutableState<Boolean>,
+                    haveWon: MutableState<Boolean>,
+                    context: Context
+) {
+
     Box (modifier = modifier.fillMaxSize()){
         Column(
         ) {
@@ -148,7 +323,8 @@ fun HangMan(modifier: Modifier = Modifier) {
                     progression,
                     chosenWord.value,
                     displayWord,
-                    chosenWordFound
+                    chosenWordFound,
+                    7
                 )
                 LazyRow(
                     modifier = modifier.fillMaxWidth().fillMaxHeight(0.2f),
@@ -379,11 +555,12 @@ fun DisplayAlphabetButton(
     progression: MutableState<Int>,
     chosenWord: GameWord,
     displayWord: MutableState<List<String>>,
-    chosenWordFound: MutableState<List<Boolean>>
+    chosenWordFound: MutableState<List<Boolean>>,
+    count: Int
 ){
     LazyVerticalGrid(
         modifier = modifier.fillMaxSize(),
-        columns = GridCells.Fixed(7),
+        columns = GridCells.Fixed(count),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
